@@ -25,7 +25,7 @@ jobs:
       run: zip -r langchain-layer.zip python
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: langchain-layer
         path: langchain-layer.zip
