@@ -1,27 +1,29 @@
 name: Build Lambda Layer (Amazon Linux 2)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # You can trigger this manually in GitHub Actions
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Build layer in Amazon Linux 2
+      - name: Build Lambda Layer in Amazon Linux 2
         run: |
-          mkdir layer_output
+          mkdir -p layer_output
           docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
             yum install -y python3 pip zip gcc gcc-c++ make \
-              && pip3 install pdfplumber python-docx -t /output/python \
-              && cd /output \
-              && zip -r lambda_layer.zip python
+            && python3 -m pip install --upgrade pip \
+            && pip3 install --upgrade typing-extensions \
+            && pip3 install pdfplumber python-docx -t /output/python \
+            && cd /output \
+            && zip -r lambda_layer.zip python
           "
 
-      - name: Upload layer zip as artifact
+      - name: Upload Lambda layer zip as artifact
         uses: actions/upload-artifact@v4
         with:
           name: lambda_layer
