@@ -25,7 +25,7 @@ jobs:
           "
 
       - name: Upload Lambda layer zip as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lambda_layer
           path: layer_output/lambda_layer.zip
