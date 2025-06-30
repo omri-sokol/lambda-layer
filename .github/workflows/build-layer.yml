@@ -1,4 +1,4 @@
-name: Build Lambda Layer (Amazon Linux 2, Python 3.11)
+name: Build Lambda Layer (Amazon Linux 2, Python 3.11 with SSL)
 
 on:
   workflow_dispatch:
@@ -11,14 +11,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Lambda Layer in Amazon Linux 2 with Python 3.11
+      - name: Build Lambda Layer with pdfplumber + python-docx for Python 3.11
         run: |
           mkdir -p layer_output
           docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
-            yum install -y gcc gcc-c++ make zip libffi-devel openssl-devel wget tar xz gzip \
+            yum update -y \
+            && yum install -y gcc gcc-c++ make zip wget tar xz gzip \
+               libffi-devel openssl openssl-devel bzip2-devel \
+               readline-devel sqlite-devel zlib-devel \
             && wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz \
             && tar xzf Python-3.11.9.tgz && cd Python-3.11.9 \
-            && ./configure --enable-optimizations && make -j 2 && make altinstall \
+            && ./configure --enable-optimizations --with-openssl=/usr/include/openssl \
+            && make -j2 && make altinstall \
             && /usr/local/bin/python3.11 -m ensurepip \
             && /usr/local/bin/python3.11 -m pip install --upgrade pip \
             && mkdir -p /output/python \
