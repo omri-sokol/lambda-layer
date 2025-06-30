@@ -11,17 +11,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Lambda Layer with pdfplumber + python-docx for Python 3.11
+      - name: Build Lambda Layer with pdfplumber + python-docx
         run: |
           mkdir -p layer_output
           docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
             yum update -y \
             && yum install -y gcc gcc-c++ make zip wget tar xz gzip \
-               libffi-devel openssl openssl-devel bzip2-devel \
+               libffi-devel openssl-devel bzip2-devel \
                readline-devel sqlite-devel zlib-devel \
+               ca-certificates \
+            && update-ca-trust force-enable \
             && wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz \
             && tar xzf Python-3.11.9.tgz && cd Python-3.11.9 \
-            && ./configure --enable-optimizations --with-openssl=/usr/include/openssl \
+            && ./configure --enable-optimizations \
             && make -j2 && make altinstall \
             && /usr/local/bin/python3.11 -m ensurepip \
             && /usr/local/bin/python3.11 -m pip install --upgrade pip \
