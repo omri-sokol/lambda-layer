@@ -1,33 +1,28 @@
-name: Build Lambda Layer (pdfplumber + python-docx)
+name: Build Lambda Layer (Amazon Linux 2)
 
 on:
-  workflow_dispatch:  # lets you trigger it manually
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install packages to /python folder
+      - name: Build layer in Amazon Linux 2
         run: |
-          mkdir -p layer/python
-          pip install pdfplumber python-docx -t layer/python
+          mkdir layer_output
+          docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
+            yum install -y python3 pip zip gcc gcc-c++ make \
+              && pip3 install pdfplumber python-docx -t /output/python \
+              && cd /output \
+              && zip -r lambda_layer.zip python
+          "
 
-      - name: Zip layer
-        run: |
-          cd layer
-          zip -r ../lambda_layer.zip .
-
-      - name: Upload Lambda layer zip as artifact
+      - name: Upload layer zip as artifact
         uses: actions/upload-artifact@v4
         with:
           name: lambda_layer
-          path: lambda_layer.zip
+          path: layer_output/lambda_layer.zip
