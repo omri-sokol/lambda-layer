@@ -1,4 +1,4 @@
-name: Build Lambda Layer (Amazon Linux 2)
+name: Build Lambda Layer (Amazon Linux 2, Python 3.11)
 
 on:
   workflow_dispatch:
@@ -11,20 +11,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Lambda Layer in Amazon Linux 2
+      - name: Build Lambda Layer in Amazon Linux 2 with Python 3.11
         run: |
           mkdir -p layer_output
           docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
-            yum install -y python3 pip zip gcc gcc-c++ make libffi-devel openssl-devel \
-            && python3 -m ensurepip \
-            && python3 -m pip install --upgrade pip \
-            && pip3 install --upgrade typing-extensions \
-            && pip3 install pdfplumber python-docx -t /output/python \
-            && cd /output \
-            && zip -r lambda_layer.zip python
+            yum install -y gcc gcc-c++ make zip libffi-devel openssl-devel wget tar xz \
+            && wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz \
+            && tar xzf Python-3.11.9.tgz && cd Python-3.11.9 \
+            && ./configure --enable-optimizations && make -j 2 && make altinstall \
+            && /usr/local/bin/python3.11 -m ensurepip \
+            && /usr/local/bin/python3.11 -m pip install --upgrade pip \
+            && mkdir -p /output/python \
+            && /usr/local/bin/python3.11 -m pip install pdfplumber python-docx -t /output/python \
+            && cd /output && zip -r lambda_layer.zip python
           "
 
-      - name: Upload Lambda layer zip as artifact
+      - name: Upload Lambda Layer ZIP
         uses: actions/upload-artifact@v4
         with:
           name: lambda_layer
