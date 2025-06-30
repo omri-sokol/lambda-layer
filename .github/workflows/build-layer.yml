@@ -1,4 +1,4 @@
-name: Build Lambda Layer (Python 3.11 via AWS Lambda Base)
+name: Build Lambda Layer (Python 3.11 via AWS Lambda Base Image)
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ jobs:
       - name: Build Lambda Layer using Lambda Python 3.11 Image
         run: |
           mkdir -p layer_output
-          docker run --rm -v "$PWD/layer_output:/output" public.ecr.aws/lambda/python:3.11 bash -c "
+          docker run --rm --entrypoint /bin/bash -v "$PWD/layer_output:/output" public.ecr.aws/lambda/python:3.11 -c "
             pip install --upgrade pip \
             && mkdir -p /tmp/python \
             && pip install pdfplumber python-docx -t /tmp/python \
