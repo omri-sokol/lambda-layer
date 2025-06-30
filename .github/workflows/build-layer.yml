@@ -1,4 +1,4 @@
-name: Build Lambda Layer (Amazon Linux 2, Python 3.11 with SSL)
+name: Build Lambda Layer (Python 3.11 via AWS Lambda Base)
 
 on:
   workflow_dispatch:
@@ -11,25 +11,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Lambda Layer with pdfplumber + python-docx
+      - name: Build Lambda Layer using Lambda Python 3.11 Image
         run: |
           mkdir -p layer_output
-          docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
-            yum update -y \
-            && yum install -y gcc gcc-c++ make zip wget tar xz gzip \
-               libffi-devel openssl-devel bzip2-devel \
-               readline-devel sqlite-devel zlib-devel \
-               ca-certificates \
-            && update-ca-trust force-enable \
-            && wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz \
-            && tar xzf Python-3.11.9.tgz && cd Python-3.11.9 \
-            && ./configure --enable-optimizations \
-            && make -j2 && make altinstall \
-            && /usr/local/bin/python3.11 -m ensurepip \
-            && /usr/local/bin/python3.11 -m pip install --upgrade pip \
-            && mkdir -p /output/python \
-            && /usr/local/bin/python3.11 -m pip install pdfplumber python-docx -t /output/python \
-            && cd /output && zip -r lambda_layer.zip python
+          docker run --rm -v "$PWD/layer_output:/output" public.ecr.aws/lambda/python:3.11 bash -c "
+            pip install --upgrade pip \
+            && mkdir -p /tmp/python \
+            && pip install pdfplumber python-docx -t /tmp/python \
+            && cd /tmp \
+            && zip -r /output/lambda_layer.zip python
           "
 
       - name: Upload Lambda Layer ZIP
