@@ -15,7 +15,7 @@ jobs:
         run: |
           mkdir -p layer_output
           docker run --rm -v "$PWD/layer_output:/output" amazonlinux:2 bash -c "
-            yum install -y gcc gcc-c++ make zip libffi-devel openssl-devel wget tar xz \
+            yum install -y gcc gcc-c++ make zip libffi-devel openssl-devel wget tar xz gzip \
             && wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz \
             && tar xzf Python-3.11.9.tgz && cd Python-3.11.9 \
             && ./configure --enable-optimizations && make -j 2 && make altinstall \
