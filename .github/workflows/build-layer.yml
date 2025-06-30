@@ -1,31 +1,33 @@
-name: Build Lambda Layer
+name: Build Lambda Layer (pdfplumber + python-docx)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # lets you trigger it manually
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        mkdir -p python
-        pip install -r requirements.txt -t python
+      - name: Install packages to /python folder
+        run: |
+          mkdir -p layer/python
+          pip install pdfplumber python-docx -t layer/python
 
-    - name: Zip layer
-      run: zip -r langchain-layer.zip python
+      - name: Zip layer
+        run: |
+          cd layer
+          zip -r ../lambda_layer.zip .
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: langchain-layer
-        path: langchain-layer.zip
+      - name: Upload Lambda layer zip as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda_layer
+          path: lambda_layer.zip
